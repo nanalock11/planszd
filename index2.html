@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html onselectstart="return false">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="Anthor" content="娜娜"/>
+    <!--视口大小-->
+    <!--<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">-->
+    <title>飞机大战呢111</title>
+    <style>
+        body{
+            /*禁止滚动条*/
+            overflow: hidden;
+            /*禁止选中*/
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            font-family: "Microsoft yahei", serif;
+        }
+
+        li {
+            list-style-type: none;
+        }
+        html, body {
+            height: 100%;
+        }
+        #box {
+            position: relative;
+            width: 512px;
+            height: 768px;
+            margin:20px auto;
+        }
+        #map{
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url("img/bg_1.jpg");
+            /*overflow: hidden;*/
+        }
+        #level{
+            position: absolute;
+            left: 0;
+            top: 0;
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+
+        }
+        #level.hide{
+            display: none;
+        }
+        #level h1{
+            margin: 70px 0 190px 0;
+            font-size:35px;
+            color: #fff;
+            text-align: center;
+        }
+        #level p{
+            width: 200px;
+            height: 37px;
+            margin: 30px auto;
+            line-height: 37px;
+            font-size: 16px;
+            font-weight: bolder;
+            background: #fff;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        #level p:hover{
+            color: #fff;
+            background: pink;
+        }
+        #level p.niu{
+            color: darkred;
+        }
+        #map .plane,#map .biu{
+            position: absolute;
+        }
+
+    </style>
+</head>
+<body>
+<div id="box">
+    <!--关卡-->
+    <div id="level">
+        <h1>飞机大战v1.0</h1>
+        <p>简单</p>
+        <p>中等</p>
+        <p>困难</p>
+        <p class="niu">奥特曼附体</p>
+    </div>
+    <!--地图-->
+    <div id="map"></div>
+
+</div>
+<script>
+    // 动画的兼容
+    window.requestAnimationFrame = window.requestAnimationFrame || function (fn) {return setTimeout(fn,1000/60)};
+    window.cancelAnimationFrame = window.cancelAnimationFrame || clearTimeout;
+
+
+    // 全局变量
+    var oLevel=document.getElementById("level"),
+        oBox=document.getElementById("box"),
+        oMap=document.getElementById("map"),
+        boxOffsetTop= oBox.offsetTop,
+        boxOffsetLeft= oBox.offsetLeft;
+
+    // 启动
+    exe();
+    // 初始选择难度界面的点击事件
+    function exe() {
+        var aP=oLevel.getElementsByTagName('p');
+        for (var i=0,length=aP.length;i<length;i++) {
+            (function (i) {
+                aP[i].onclick=function (e) {
+                    e = e ||window.event;
+                    startGame(i,{
+                        x:e.clientX-boxOffsetLeft,
+                        y:e.clientY-boxOffsetTop,
+
+                    });
+                }
+            })(i);
+        }
+
+    }
+
+    // 开始游戏
+    function startGame(level,pos) {
+        clearmap();
+        plane(level,pos);
+    }
+    // 隐藏和清理地图
+    function clearmap() {
+        oLevel.className='hide';
+    }
+
+    // 创建我军
+    function plane(level,pos) {
+        var oImg=document.createElement('img');
+        oImg.src='img/plane_0.png';
+        oImg.width=70;
+        oImg.height=70;
+        oImg.className='plane';
+        oMap.appendChild(oImg);
+        oImg.style.left=pos.x-oImg.width/2+'px';
+        oImg.style.top=pos.y-oImg.height/2+'px';
+        //设置边界值
+        var leftMin=-oImg.width/2,
+            leftMax=oMap.clientWidth-oImg.width/2,
+            topMin=0,
+            topMax=oMap.clientHeight-oImg.height/2;
+
+        //添加鼠标移动事件
+        document.onmousemove=function (ev) {
+            ev = ev || window.event;
+            var left=ev.clientX-boxOffsetLeft-oImg.width/2;
+            var top=ev.clientY-boxOffsetTop-oImg.width/2;
+
+
+
+            left = Math.max(leftMin ,left);
+            left = Math.min(leftMax ,left);
+            top = Math.max(topMin,top);
+            top = Math.min(topMax,top);
+
+            oImg.style.left=left+'px';
+            oImg.style.top=top+'px';
+
+
+        };
+        fire(oImg,level);
+    }
+    // 我军子弹
+    function fire(oImg,level) {
+        setInterval(function () {
+            var oBiu=new Image();
+            oBiu.src='img/fire.png';
+            oBiu.width=30;
+            oBiu.height=30;
+            oBiu.className='biu';
+            oBiu.style.left=oImg.offsetLeft+oImg.width/2-oBiu.width/2+'px';
+            oBiu.style.top=oImg.offsetTop-oImg.height+10+'px';
+            oMap.appendChild(oBiu);
+            //子弹运动
+            function m() {
+                var top=oBiu.offsetTop-35;
+                if (top<-oBiu.height){
+                    oMap.removeChild(oBiu);
+                }else{
+                    requestAnimationFrame(m);
+                }
+                oBiu.style.top=top+'px';
+                
+            }
+            setTimeout(function () {
+                requestAnimationFrame(m);
+
+            },50)
+
+
+
+
+
+        },[100,200,200,50][level]);
+
+
+    }
+
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
